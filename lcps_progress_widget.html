@@ -3,215 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LCPS Dynamic School Progress Tracker</title>
+    <title>LCPS Progress Widget</title>
     <style>
         :root {
             --bg-color: #ffffff;
             --text-color: #37352f;
-            --bar-bg: #eaeaea;
-            --bar-fill: #2383e2;
-            --bar-fill-secondary: #00bfa5;
-            --card-bg: #f7f7f5;
-            --border-radius: 8px;
+            --container-bg: #823818; /* Warm brown/terracotta */
+            --bar-track: #4d1e0a;    /* Darker brown track */
+            --bar-fill: #fcdbb0;     /* Soft cream-peach accent fill */
+            --border-color: #ffffff; /* Sharp white borders */
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
         }
+
+        /* Ambient dark mode support matching Notion */
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-color: #191919;
                 --text-color: #ffffff;
-                --bar-bg: #2c2c2c;
-                --bar-fill: #2eaadc;
-                --bar-fill-secondary: #10b981;
-                --card-bg: #202020;
             }
         }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            background-color: transparent;
             margin: 0;
-            padding: 16px;
+            padding: 12px;
+            font-family: var(--font-family);
+            color: #ffffff;
             display: flex;
-            flex-direction: column;
-            gap: 16px;
+            justify-content: center;
         }
-        .tracker-card {
-            background-color: var(--card-bg);
-            padding: 14px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+
+        .widget-container {
+            background-color: var(--container-bg);
+            padding: 20px 24px;
+            border-radius: 4px;
+            width: 100%;
+            max-width: 800px;
+            box-sizing: border-box;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
-        .header-row {
+
+        .title {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .progress-row {
+            margin-bottom: 22px;
+        }
+        
+        .progress-row:last-child {
+            margin-bottom: 4px;
+        }
+
+        .row-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-        .label {
-            opacity: 0.9;
-        }
-        .percentage {
-            font-variant-numeric: tabular-nums;
-        }
-        .progress-bar-container {
-            width: 100%;
-            height: 10px;
-            background-color: var(--bar-bg);
-            border-radius: 5px;
-            overflow: hidden;
-        }
-        .progress-bar-fill {
-            height: 100%;
-            background-color: var(--bar-fill);
-            width: 0%;
-            transition: width 0.5s ease-out;
-            border-radius: 5px;
-        }
-        .tracker-card:nth-child(even) .progress-bar-fill {
-            background-color: var(--bar-fill-secondary);
-        }
-        .sub-text {
             font-size: 11px;
-            opacity: 0.55;
-            margin-top: 4px;
-            text-align: right;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            color: #ffffff;
+        }
+
+        .bar-container {
+            position: relative;
+            height: 14px;
+            background-color: var(--bar-track);
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 0%;
+            background-color: var(--bar-fill);
+            transition: width 0.5s ease-out;
         }
     </style>
 </head>
 <body>
 
-    <div class="tracker-card" id="card-year">
-        <div class="header-row">
-            <span class="label" id="label-year">School Year 2026-2027</span>
-            <span class="percentage" id="pct-year">0%</span>
+    <div class="widget-container">
+        <div class="title">My Progress</div>
+        
+        <div class="progress-row">
+            <div class="row-header">
+                <span id="year-label">School Year</span>
+                <span id="year-pct">0%</span>
+            </div>
+            <div class="bar-container">
+                <div class="bar-fill" id="year-bar"></div>
+            </div>
         </div>
-        <div class="progress-bar-container">
-            <div class="progress-bar-fill" id="bar-year"></div>
-        </div>
-        <div class="sub-text" id="dates-year"></div>
-    </div>
 
-    <div class="tracker-card" id="card-semester">
-        <div class="header-row">
-            <span class="label" id="label-semester">Current Semester</span>
-            <span class="percentage" id="pct-semester">0%</span>
+        <div class="progress-row">
+            <div class="row-header">
+                <span id="semester-label">Semester</span>
+                <span id="semester-pct">0%</span>
+            </div>
+            <div class="bar-container">
+                <div class="bar-fill" id="semester-bar"></div>
+            </div>
         </div>
-        <div class="progress-bar-container">
-            <div class="progress-bar-fill" id="bar-semester"></div>
-        </div>
-        <div class="sub-text" id="dates-semester"></div>
-    </div>
 
-    <div class="tracker-card" id="card-quarter">
-        <div class="header-row">
-            <span class="label" id="label-quarter">Current Quarter</span>
-            <span class="percentage" id="pct-quarter">0%</span>
+        <div class="progress-row">
+            <div class="row-header">
+                <span id="quarter-label">Quarter</span>
+                <span id="quarter-pct">0%</span>
+            </div>
+            <div class="bar-container">
+                <div class="bar-fill" id="quarter-bar"></div>
+            </div>
         </div>
-        <div class="progress-bar-container">
-            <div class="progress-bar-fill" id="bar-quarter"></div>
-        </div>
-        <div class="sub-text" id="dates-quarter"></div>
-    </div>
 
-    <div class="tracker-card" id="card-week">
-        <div class="header-row">
-            <span class="label" id="label-week">School Week</span>
-            <span class="percentage" id="pct-week">0%</span>
+        <div class="progress-row">
+            <div class="row-header">
+                <span id="week-label">Week</span>
+                <span id="week-pct">0%</span>
+            </div>
+            <div class="bar-container">
+                <div class="bar-fill" id="week-bar"></div>
+            </div>
         </div>
-        <div class="progress-bar-container">
-            <div class="progress-bar-fill" id="bar-week"></div>
-        </div>
-        <div class="sub-text" id="dates-week"></div>
     </div>
 
     <script>
-        // Official LCPS 2026-2027 Grading Periods & Operational Schedule
-        const timeline = {
-            year: { start: new Date("2026-08-17T00:00:00"), end: new Date("2027-06-11T23:59:59"), name: "LCPS School Year" },
+        // Official LCPS 2026-2027 Academic Calendar Dates
+        const schedule = {
+            year: { start: new Date("2026-08-17T00:00:00"), end: new Date("2027-06-11T23:59:59") },
             semesters: [
-                { start: new Date("2026-08-17T00:00:00"), end: new Date("2027-01-22T23:59:59"), name: "Semester 1" },
-                { start: new Date("2027-01-23T00:00:00"), end: new Date("2027-06-11T23:59:59"), name: "Semester 2" }
+                { name: "Semester 1", start: new Date("2026-08-17T00:00:00"), end: new Date("2027-01-22T23:59:59") },
+                { name: "Semester 2", start: new Date("2027-01-23T00:00:00"), end: new Date("2027-06-11T23:59:59") }
             ],
             quarters: [
-                { start: new Date("2026-08-17T00:00:00"), end: new Date("2026-10-28T23:59:59"), name: "Quarter 1" },
-                { start: new Date("2026-10-29T00:00:00"), end: new Date("2027-01-22T23:59:59"), name: "Quarter 2" },
-                { start: new Date("2027-01-23T00:00:00"), end: new Date("2027-04-09T23:59:59"), name: "Quarter 3" },
-                { start: new Date("2027-04-10T00:00:00"), end: new Date("2027-06-11T23:59:59"), name: "Quarter 4" }
+                { name: "Quarter 1", start: new Date("2026-08-17T00:00:00"), end: new Date("2026-10-28T23:59:59") },
+                { name: "Quarter 2", start: new Date("2026-10-29T00:00:00"), end: new Date("2027-01-22T23:59:59") },
+                { name: "Quarter 3", start: new Date("2027-01-23T00:00:00"), end: new Date("2027-04-09T23:59:59") },
+                { name: "Quarter 4", start: new Date("2027-04-10T00:00:00"), end: new Date("2027-06-11T23:59:59") }
             ]
         };
 
-        function formatDate(d) {
-            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        }
-
-        function calculateProgress(now, start, end) {
+        function calculatePercentage(now, start, end) {
             if (now < start) return 0;
             if (now > end) return 100;
             const total = end - start;
-            const elapsed = now - start;
-            return Math.min(100, Math.max(0, (elapsed / total) * 100));
+            const current = now - start;
+            return Math.min(100, Math.max(0, Math.floor((current / total) * 100)));
         }
 
         function updateWidget() {
             const now = new Date();
 
-            // 1. School Year Progress
-            const yearPct = calculateProgress(now, timeline.year.start, timeline.year.end);
-            document.getElementById('pct-year').innerText = yearPct.toFixed(1) + "%";
-            document.getElementById('bar-year').style.width = yearPct + "%";
-            document.getElementById('dates-year').innerText = `${formatDate(timeline.year.start)} – ${formatDate(timeline.year.end)}`;
+            // 1. School Year Calculation
+            const yearPct = calculatePercentage(now, schedule.year.start, schedule.year.end);
+            document.getElementById("year-bar").style.width = yearPct + "%";
+            document.getElementById("year-pct").innerText = yearPct + "%";
 
-            // 2. Active Semester Progress
-            let activeSem = timeline.semesters[0];
-            for (let sem of timeline.semesters) {
-                if (now >= sem.start && now <= sem.end) {
-                    activeSem = sem;
+            // 2. Dynamic Semester Track
+            let activeSem = schedule.semesters[0];
+            if (now > schedule.semesters[0].end) {
+                activeSem = schedule.semesters[1];
+            }
+            const semPct = calculatePercentage(now, activeSem.start, activeSem.end);
+            document.getElementById("semester-label").innerText = activeSem.name;
+            document.getElementById("semester-bar").style.width = semPct + "%";
+            document.getElementById("semester-pct").innerText = semPct + "%";
+
+            // 3. Dynamic Quarter Track
+            let activeQtr = schedule.quarters[0];
+            for (let q of schedule.quarters) {
+                if (now >= q.start && now <= q.end) {
+                    activeQtr = q;
                     break;
                 }
             }
-            if (now > timeline.semesters[1].end) activeSem = timeline.semesters[1];
-            const semPct = calculateProgress(now, activeSem.start, activeSem.end);
-            document.getElementById('label-semester').innerText = activeSem.name;
-            document.getElementById('pct-semester').innerText = semPct.toFixed(1) + "%";
-            document.getElementById('bar-semester').style.width = semPct + "%";
-            document.getElementById('dates-semester').innerText = `${formatDate(activeSem.start)} – ${formatDate(activeSem.end)}`;
+            if (now > schedule.quarters[3].end) activeQtr = schedule.quarters[3];
+            
+            const qtrPct = calculatePercentage(now, activeQtr.start, activeQtr.end);
+            document.getElementById("quarter-label").innerText = activeQtr.name;
+            document.getElementById("quarter-bar").style.width = qtrPct + "%";
+            document.getElementById("quarter-pct").innerText = qtrPct + "%";
 
-            // 3. Active Quarter Progress
-            let activeQtr = timeline.quarters[0];
-            for (let qtr of timeline.quarters) {
-                if (now >= qtr.start && now <= qtr.end) {
-                    activeQtr = qtr;
-                    break;
-                }
-            }
-            if (now > timeline.quarters[3].end) activeQtr = timeline.quarters[3];
-            const qtrPct = calculateProgress(now, activeQtr.start, activeQtr.end);
-            document.getElementById('label-quarter').innerText = activeQtr.name;
-            document.getElementById('pct-quarter').innerText = qtrPct.toFixed(1) + "%";
-            document.getElementById('bar-quarter').style.width = qtrPct + "%";
-            document.getElementById('dates-quarter').innerText = `${formatDate(activeQtr.start)} – ${formatDate(activeQtr.end)}`;
+            // 4. Dynamic Academic Week Calculation (Mon 8:00 AM to Fri 4:00 PM)
+            const currentDay = now.getDay();
+            const startOfWeek = new Date(now);
+            const endOfWeek = new Date(now);
 
-            // 4. Dynamic Instructional Week Progress (Mon 8AM to Fri 4PM)
-            const currentDay = now.getDay(); 
-            const monday = new Date(now);
-            const distToMonday = currentDay === 0 ? -6 : 1 - currentDay; 
-            monday.setDate(now.getDate() + distToMonday);
-            monday.setHours(8, 0, 0, 0);
+            // Distance to current week's Monday
+            const distToMonday = currentDay === 0 ? -6 : 1 - currentDay;
+            startOfWeek.setDate(now.getDate() + distToMonday);
+            startOfWeek.setHours(8, 0, 0, 0);
 
-            const friday = new Date(monday);
-            friday.setDate(monday.getDate() + 4);
-            friday.setHours(16, 0, 0, 0);
+            endOfWeek.setDate(startOfWeek.getDate() + 4);
+            endOfWeek.setHours(16, 0, 0, 0);
 
-            const weekPct = calculateProgress(now, monday, friday);
-            document.getElementById('pct-week').innerText = weekPct.toFixed(0) + "%";
-            document.getElementById('bar-week').style.width = weekPct + "%";
-            document.getElementById('dates-week').innerText = `${formatDate(monday)} – ${formatDate(friday)}`;
+            const weekPct = calculatePercentage(now, startOfWeek, endOfWeek);
+            document.getElementById("week-bar").style.width = weekPct + "%";
+            document.getElementById("week-pct").innerText = weekPct + "%";
         }
 
+        // Run immediately and update every minute
         updateWidget();
-        // Keep widget fresh if left open in a browser session
         setInterval(updateWidget, 60000);
     </script>
 </body>
 </html>
+
