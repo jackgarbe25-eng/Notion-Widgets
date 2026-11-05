@@ -6,8 +6,6 @@
     <title>LCPS Progress Widget</title>
     <style>
         :root {
-            --bg-color: #ffffff;
-            --text-color: #37352f;
             --container-bg: #823818; /* Warm brown/terracotta */
             --bar-track: #4d1e0a;    /* Darker brown track */
             --bar-fill: #fcdbb0;     /* Soft cream-peach accent fill */
@@ -15,22 +13,15 @@
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
         }
 
-        /* Ambient dark mode support matching Notion */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-color: #191919;
-                --text-color: #ffffff;
-            }
-        }
-
-        body {
-            background-color: transparent;
+        html, body {
+            background-color: transparent !important; /* Force transparent frame */
             margin: 0;
             padding: 12px;
             font-family: var(--font-family);
             color: #ffffff;
             display: flex;
             justify-content: center;
+            overflow: hidden;
         }
 
         .widget-container {
@@ -137,7 +128,6 @@
     </div>
 
     <script>
-        // Official LCPS 2026-2027 Academic Calendar Dates
         const schedule = {
             year: { start: new Date("2026-08-17T00:00:00"), end: new Date("2027-06-11T23:59:59") },
             semesters: [
@@ -163,22 +153,22 @@
         function updateWidget() {
             const now = new Date();
 
-            // 1. School Year Calculation
             const yearPct = calculatePercentage(now, schedule.year.start, schedule.year.end);
             document.getElementById("year-bar").style.width = yearPct + "%";
             document.getElementById("year-pct").innerText = yearPct + "%";
 
-            // 2. Dynamic Semester Track
             let activeSem = schedule.semesters[0];
-            if (now > schedule.semesters[0].end) {
-                activeSem = schedule.semesters[1];
+            for (let s of schedule.semesters) {
+                if (now >= s.start && now <= s.end) {
+                    activeSem = s;
+                    break;
+                }
             }
             const semPct = calculatePercentage(now, activeSem.start, activeSem.end);
             document.getElementById("semester-label").innerText = activeSem.name;
             document.getElementById("semester-bar").style.width = semPct + "%";
             document.getElementById("semester-pct").innerText = semPct + "%";
 
-            // 3. Dynamic Quarter Track
             let activeQtr = schedule.quarters[0];
             for (let q of schedule.quarters) {
                 if (now >= q.start && now <= q.end) {
@@ -186,19 +176,15 @@
                     break;
                 }
             }
-            if (now > schedule.quarters[3].end) activeQtr = schedule.quarters[3];
-            
             const qtrPct = calculatePercentage(now, activeQtr.start, activeQtr.end);
             document.getElementById("quarter-label").innerText = activeQtr.name;
             document.getElementById("quarter-bar").style.width = qtrPct + "%";
             document.getElementById("quarter-pct").innerText = qtrPct + "%";
 
-            // 4. Dynamic Academic Week Calculation (Mon 8:00 AM to Fri 4:00 PM)
             const currentDay = now.getDay();
             const startOfWeek = new Date(now);
             const endOfWeek = new Date(now);
 
-            // Distance to current week's Monday
             const distToMonday = currentDay === 0 ? -6 : 1 - currentDay;
             startOfWeek.setDate(now.getDate() + distToMonday);
             startOfWeek.setHours(8, 0, 0, 0);
@@ -211,10 +197,8 @@
             document.getElementById("week-pct").innerText = weekPct + "%";
         }
 
-        // Run immediately and update every minute
         updateWidget();
         setInterval(updateWidget, 60000);
     </script>
 </body>
 </html>
-
